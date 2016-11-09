@@ -8,23 +8,24 @@ typedef struct {
 
 typedef struct client_t client_t;
 struct client_t {
-    int sockfd;
-    struct timespec time;
-    hps_str_t str;
-    client_t *next;
+    int             sockfd;
+    struct timespec time;   /* For timeout event. */
+    hps_str_t       str;    /* Received or processed HTTP headers. */
+    int             resource; /* File descriptor of the resource will be sended. */
+    client_t        *next;
 };
 
 /* Use a hash table to save clients' infomation */
 typedef struct clients_list clients_list;
 struct clients_list {
-    int now;
-    int size;
+    int        now;   /* The number of connections. */
+    int        size;  /* The maximum number of connections. */
     client_t **hashtbl;
 };
 
-/* 5000 ms for timeout */
+/* 2000 ms for timeout */
 #ifndef TIMEOUT
-#   define TIMEOUT 1000L
+#   define TIMEOUT 2000L
 #endif
 
 #define hps_str_null(str)\

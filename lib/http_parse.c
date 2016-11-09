@@ -61,12 +61,12 @@ static int parse_headers(hps_str_t *str, http_headers *headers)
 
     p = parse_get_line(str->data, buf); /* skip request line */
     while ((p = parse_get_line(p, buf)) != NULL) {
-        /* The server is a so simple that don't need to parse headers */
+        /* The server is a so simple that don't need to parse headers. */
     }
     return HTTP_PARSE_OK;
 }
 
-/* convert local time to RFC1123 format */
+/* Convert local time to RFC1123 format. */
 static void rfctime(char *buf, const struct tm *tm)
 {
 	static char *days[] = {
@@ -147,18 +147,19 @@ static const char *getype(const char *path)
     return typelist[0][1];
 }
 
-static int make_reply(int sockfd, hps_str_t *str, http_req *req, http_headers *headers)
+static int make_reply(client_t *cli, http_req *req, http_headers *headers)
 {
     char   buf[MAXLINE];
     char   timebuf[TIMEBUF];
     char   *path;
     off_t  content_len;
     const char *content_type;
-    size_t offset;
     int    code;
     time_t t;
-    int    fd, n, dirfd;
+    int    fd, dirfd;
+    hps_str_t *str;
 
+    str = &cli->str;
     code = 200;
     req->resource.data[req->resource.len] = '\0';
     if (STRCMP(req->resource.data, ==, "/"))
@@ -186,7 +187,7 @@ static int make_reply(int sockfd, hps_str_t *str, http_req *req, http_headers *h
     rfctime(timebuf, localtime(&t));
     sprintf(buf, "%s %d %s\r\n"
             "Date: %s\r\n"
-            "Server: HighPermanceServer/%s\r\n"
+            "Server: HighPerformanceServer/%s\r\n"
             "Content-length: %lu\r\n"
             "Content-Type: %s\r\n\r\n",
             req->version == 1 ? "HTTP/1.1" :
@@ -196,25 +197,14 @@ static int make_reply(int sockfd, hps_str_t *str, http_req *req, http_headers *h
             timebuf, VERSION,
             content_len, content_type);
 
-    if (content_len > MAXLINE) { /* File is too large to save in buf. */
-        writen(sockfd, buf, strlen(buf));
-        while ((n = readn(fd, buf, MAXLINE) > 0))
-            writen(sockfd, buf, n);
-        return FILE_TOO_LARGE;
-    }
-
-    offset = strlen(buf);
-    while ((n = readn(fd, buf + offset, MAXLINE - offset)) > 0)
-        offset += n;
-
-    str->len = offset;
-    memcpy(str->data, buf, offset);
-    close(fd);
+    str->len = strlen(buf);
+    memcpy(str->data, buf, str->len);
+    cli->resource = fd;
     close(dirfd);
     return MAKE_REPLY_OK;
 }
 
-int http_parse(int sockfd, client_t *cli)
+int http_parse(client_t *cli)
 {
     int ret;
     http_req req;
@@ -225,7 +215,7 @@ int http_parse(int sockfd, client_t *cli)
     if ((ret = parse_headers(&cli->str, &headers)) != HTTP_PARSE_OK) {
         return ret;
     }
-    if ((ret = make_reply(sockfd, &cli->str, &req, &headers)) != MAKE_REPLY_OK) {
+    if ((ret = make_reply(cli, &req, &headers)) != MAKE_REPLY_OK) {
         return ret;
     }
 

@@ -15,7 +15,6 @@ enum {
     HTTP_PARSE_BAD_SYNTAX,
     MAKE_REPLY_OK,
     MAKE_REPLY_FAILURE,
-    FILE_TOO_LARGE
 };
 
 typedef struct {
@@ -28,6 +27,6 @@ typedef struct {
     /* Yes! Nothing! */
 } http_headers;
 
-int http_parse(int sockfd, client_t *cli);
+int http_parse(client_t *cli);
 
 #endif /* HTTP_PARSE_H__ */

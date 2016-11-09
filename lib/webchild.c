@@ -36,25 +36,23 @@ void webchild(int listenfd)
         for (int i = 0; i < nfds; ++i) {
             if (events[i].data.fd == listenfd) { /* Accept events. */
                 if ((connfd = accept_e(listenfd, &cli_addr, &len)) < 0) {
-                    debug("%d\n", clients.now);
                     exit(errno);
                 }
                 if (clients_add(&clients, connfd) < 0 || event_add(epfd, connfd, EPOLLIN) < 0) {
                     close(connfd);
                     continue;
                 }
-                printf("%d %d %s %d\n", getpid(), connfd, sock_ntop(&cli_addr), clients.now);
+                printf("child: %d  from: %s  conns: %d\n",
+                        getpid(), sock_ntop(&cli_addr), clients.now);
             } else if (events[i].events & EPOLLIN) { /* Read events. */
                 client_t *cli = clients_find(&clients, events[i].data.fd);
                 if ((ret = handle_read(cli)) == READ_FAILURE) {
                     clients_del(epfd, &clients, events[i].data.fd);
                     continue;
                 }
-                if ((ret = http_parse(events[i].data.fd, cli)) == HTTP_PARSE_OK) {
+                if ((ret = http_parse(cli)) == HTTP_PARSE_OK) {
                     event_mod(epfd, events[i].data.fd, EPOLLOUT);
-                } else if (ret == FILE_TOO_LARGE) {
-                    /* Do nothing. */
-                } else {
+                } else {  /* Wrong HTTP request. */
                     clients_del(epfd, &clients, events[i].data.fd);
                     continue;
                 }
@@ -62,16 +60,14 @@ void webchild(int listenfd)
             } else if (events[i].events & EPOLLOUT) { /* Write events. */
                 client_t *cli = clients_find(&clients, events[i].data.fd);
                 if ((ret = handle_write(cli)) == WRITE_FAILURE) {
-                    clients_del(epfd, &clients, events[i].data.fd);
-                    continue;
-                } else if (ret == WRITE_AGAIN) {
-                    continue;
+                } else {
+                    /* For next write, but there are some wrong. */
+                    clients_update_timeout(&clients, events[i].data.fd);
                 }
-                event_mod(epfd, events[i].data.fd, EPOLLIN);
-                clients_update_timeout(&clients, events[i].data.fd);
+                clients_del(epfd, &clients, events[i].data.fd);
             } else {
                 clients_del(epfd, &clients, events[i].data.fd);
             }
-        } /* handle epoll task */
+        } /* Handle epoll task. */
     } /* main loop */
 }

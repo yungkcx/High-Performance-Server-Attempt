@@ -69,7 +69,7 @@
 #define NCPU              8
 #define MAXLINE           4096
 #define TIMEBUF           40
-#define PORT              "33333"
+#define PORT              "8080"
 #define CONN_PER_PROCESS  200
 #define LISTENQ           (CONN_PER_PROCESS) * (NCPU)
 
@@ -86,10 +86,8 @@
 
 enum {
     WRITE_OK,
-    WRITE_AGAIN,
     WRITE_FAILURE,
     READ_OK,
-    READ_AGAIN,
     READ_FAILURE
 };
 
