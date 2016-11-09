@@ -1,62 +1,17 @@
 #ifndef HASP_H__
 #	define HASP_H__
 
-#include <linux/tcp.h>
-#include <linux/udp.h>
-#include <linux/sockios.h>
-#include <linux/netlink.h>
-#include <linux/if_ether.h>
-#include <linux/if_packet.h>
-#include <linux/if_link.h>
-
-#include <netinet/ip.h>
-#include <netinet/ip_icmp.h>
-#include <netinet/in.h>
-
-#include <sys/times.h>
-#include <sys/param.h>
-#include <sys/ipc.h>
-#include <sys/un.h>
-#include <sys/resource.h>
-#include <sys/types.h>
 #include <sys/wait.h>
-#include <sys/time.h>
 #include <sys/epoll.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
-
-#include <net/if.h>
-#include <net/ethernet.h>
-
 #include <arpa/inet.h>
-
 #include <stddef.h>
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdlib.h>
-
-#include <setjmp.h>
-#include <err.h>
-#include <inttypes.h>
-#include <sys/utsname.h>
-#include <wchar.h>
-#include <aio.h>
-#include <dirent.h>
-#include <ifaddrs.h>
-#include <syslog.h>
-#include <pthread.h>
-#include <ctype.h>
-#include <error.h>
-#include <math.h>
-#include <grp.h>
-#include <pwd.h>
-#include <shadow.h>
 #include <errno.h>
-#include <assert.h>
 #include <unistd.h>
 #include <time.h>
-#include <termio.h>
 #include <signal.h>
 #include <string.h>
 #include <fcntl.h>
@@ -65,7 +20,7 @@
 #include "clients.h"
 #include "http_parse.h"
 
-#define VERSION           "1.0"
+#define VERSION           "1.1"
 #define NCPU              8
 #define MAXLINE           4096
 #define TIMEBUF           40

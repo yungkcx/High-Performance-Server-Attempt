@@ -132,8 +132,10 @@ int tcp_connect(const char *host, const char *port)
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
 
-	if ((n = getaddrinfo(host, port, &hints, &res)) != 0)
-		error(EXIT_FAILURE, 0, "tcp_connect error for %s, %s: %s", host, port, gai_strerror(n));
+	if ((n = getaddrinfo(host, port, &hints, &res)) != 0) {
+		eret("tcp_connect error for %s, %s: %s", host, port, gai_strerror(n));
+        return -1;
+    }
 	ressave = res;
 
 	do {
@@ -146,8 +148,10 @@ int tcp_connect(const char *host, const char *port)
 			esys("close error");
 	} while ((res = res->ai_next) != NULL);
 
-	if (res == NULL)
-		error(EXIT_FAILURE, errno, "tcp_connect error for %s, %s", host, port);
+	if (res == NULL) {
+		eret("tcp_connect error for %s, %s", host, port);
+        return -1;
+    }
 
 	freeaddrinfo(ressave);
 
