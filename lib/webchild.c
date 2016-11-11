@@ -60,9 +60,9 @@ void webchild(int listenfd)
             } else if (events[i].events & EPOLLOUT) { /* Write events. */
                 client_t *cli = clients_find(&clients, events[i].data.fd);
                 if ((ret = handle_write(cli)) == WRITE_FAILURE) {
-                } else {
-                    /* For next write, but there are some wrong. */
-                    clients_update_timeout(&clients, events[i].data.fd);
+                    /* Do nothing. */
+                } else if (ret == WRITE_OK) {
+                    /* For next write, but this server dont't support `keep alive'. */
                 }
                 clients_del(epfd, &clients, events[i].data.fd);
             } else {
