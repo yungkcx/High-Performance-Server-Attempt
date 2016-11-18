@@ -28,13 +28,13 @@
 #define CONN_PER_PROCESS  200
 #define LISTENQ           (CONN_PER_PROCESS) * (NCPU)
 
-#define UNUSED(v)            (void)(v);
+#define UNUSED(v)            (void)(v)
 #define max(a, b) ({\
 		typeof(a) _max1 = (a);\
 		typeof(b) _max2 = (b);\
 		_max1 > _max2 ? _max1 : _max2;})
 #define STRCMP(a, R, b)          (strcmp(a, b) R 0)
-#define STRNCMP(a, R, b, n)      (strncmp(a, b, n) R 0);
+#define STRNCMP(a, R, b, n)      (strncmp(a, b, n) R 0)
 #define STRCASECMP(a, R, b)      (strcasecmp(a, b) R 0)
 #define STRNCASECMP(a, R, b, n)  (strncasecmp(a, b, n) R 0)
 #define debug(M, ...)        fprintf(stderr, "DEBUG %s (in function '%s'):%d: " M "\n", __FILE__, __FUNCTION__, __LINE__, ##__VA_ARGS__)

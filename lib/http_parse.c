@@ -103,11 +103,17 @@ static void getsuffix(const char *path, char *suffix)
 	strcpy(suffix, "*");
 }
 
-static const char *getype(const char *path)
+enum {
+    ISREGULAR,
+    ISPHP
+};
+
+static int gettype(const char *path, char **type)
 {
 	char suffix[20];
 	static char *typelist[][2] = {
 		{"*"    , "application/octet-stream"},
+        {".php" , "text/html"},
 		{".html", "text/html"},
 		{".htm" , "text/html"},
 		{".htx" , "text/html"},
@@ -141,10 +147,16 @@ static const char *getype(const char *path)
 	getsuffix(path, suffix);
 	for (int i = 0; typelist[i][0] != NULL; ++i) {
 		if (STRCMP(typelist[i][0], ==, suffix)) {
-			return typelist[i][1];
+			*type = typelist[i][1];
+            if (STRNCMP(typelist[i][0], ==, ".php", 4))
+                return ISPHP;
+            else
+                goto regular_files;
         }
     }
-    return typelist[0][1];
+    *type = typelist[0][1];
+regular_files:
+    return ISREGULAR;
 }
 
 static int make_reply(client_t *cli, http_req *req, http_headers *headers)
@@ -153,7 +165,7 @@ static int make_reply(client_t *cli, http_req *req, http_headers *headers)
     char   timebuf[TIMEBUF];
     char   *path;
     off_t  content_len;
-    const char *content_type;
+    char   *content_type;
     int    code;
     time_t t;
     int    fd, dirfd;
@@ -172,17 +184,35 @@ static int make_reply(client_t *cli, http_req *req, http_headers *headers)
             exit(errno);
         }
     }
-    if ((content_len = fsize(dirfd, path)) < 0) {
-        if (errno == ENOENT) {
+    {
+        struct stat buf;
+        if (fstatat(dirfd, path, &buf, 0) < 0 && errno == ENOENT) {
             code = 404;
             path = "status/404.html";
         }
     }
-    if ((fd = openat(dirfd, path, O_RDONLY)) < 0) {
-        eret("Can't open file %s", path);
-        return MAKE_REPLY_FAILURE;
+    if (gettype(path, &content_type) == ISPHP) {
+        /* Make a temp file for PHP. */
+        char s[11] = "www/XXXXXX";
+        char tmp_path[255];
+        sprintf(tmp_path, "www/%s", path);
+        fd = mkstemp(s);
+        if (vfork() == 0) {
+            close(STDOUT_FILENO);
+            dup2(fd, STDOUT_FILENO);
+            execlp("php", "php", tmp_path, NULL);
+        }
+        fsync(fd);
+        lseek(fd, 0, SEEK_SET);
+        content_len = fsize(dirfd, s + 4);
+        unlink(s);
+    } else {
+        if ((fd = openat(dirfd, path, O_RDONLY)) < 0) {
+            eret("Can't open file %s", path);
+            return MAKE_REPLY_FAILURE;
+        }
+        content_len = fsize(dirfd, path);
     }
-    content_type = getype(path);
     t = time(NULL);
     rfctime(timebuf, localtime(&t));
     sprintf(buf, "%s %d %s\r\n"

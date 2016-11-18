@@ -9,6 +9,7 @@ int handle_read(client_t *cli)
         cli->str.data = malloc(MAXLINE);
     if ((n = readn(cli->sockfd, cli->str.data, MAXLINE)) <= 0)
         return READ_FAILURE;
+    debug("%s", cli->str.data);
     cli->str.len = n;
     return READ_OK;
 }
@@ -18,7 +19,9 @@ int handle_write(client_t *cli)
     ssize_t n;
 
     if ((n = writen(cli->sockfd, cli->str.data, cli->str.len)) <= 0) {
-            return WRITE_FAILURE;
+        if (errno != EBADF)
+            close(cli->resource);
+        return WRITE_FAILURE;
     }
     if (cli->resource == 0) {
         return WRITE_OK;

@@ -111,7 +111,7 @@ ssize_t readn(int fd, void *buf, size_t n)
             } else if (errno == EINTR) {
 				nread = 0;
             } else {
-                eret("readn error");
+                debug("readn error");
                 return nread;
 			}
 		} else if (nread == 0) {
