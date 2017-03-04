@@ -1,4 +1,4 @@
-#include "../include/hpsa.h"
+#include "../hpsa.h"
 
 int set_fl(int fd, int flags)
 {
@@ -160,7 +160,7 @@ int tcp_connect(const char *host, const char *port)
 
 /* addrlenp can be NULL, it is not necessary for TCP */
 int tcp_listen(const char *host,
-		const char *port, socklen_t *addrlenp)
+		const char *port, socklen_t *addrlenp, int backlog)
 {
 	int fd, n;
 	struct addrinfo hints, *res, *ressave;
@@ -197,7 +197,7 @@ int tcp_listen(const char *host,
 		eret("tcp_listen error for %s, %s", host, port);
         return -1;
     }
-	if (listen(fd, LISTENQ) < 0) {
+	if (listen(fd, backlog) < 0) {
 		eret("listen error");
         return -1;
     }

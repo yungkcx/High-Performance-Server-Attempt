@@ -1,4 +1,4 @@
-#include "../include/hpsa.h"
+#include "../hpsa.h"
 
 void webchild(int listenfd)
 {

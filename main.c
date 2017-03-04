@@ -1,14 +1,17 @@
-#include "./include/hpsa.h"
+#include "hpsa.h"
 
-void webchild(int);
 int main()
 {
     int listenfd, status;
     pid_t pid[NCPU];
+    hpsa_config conf;
 
-    if ((listenfd = tcp_listen("localhost", PORT, NULL)) < 0)
+    puts("Reading hpsa.conf...");
+    if (config_read(&conf) < 0)
+        exit(1);
+    if ((listenfd = tcp_listen(conf.host, conf.port, NULL, conf.ncpu * CONN_PER_PROCESS)) < 0)
         esys("tcp_listen error");
-    for (int i = 0; i < NCPU; ++i) {
+    for (int i = 0; i < conf.ncpu; ++i) {
         if ((pid[i] = fork()) == 0) {
             webchild(listenfd);
             printf("%d\n", getpid());
@@ -20,7 +23,7 @@ int main()
         }
     }
     signal(SIGPIPE, SIG_IGN);
-    puts("----- Start OK -----");
+    printf("----- Start At %s:%s -----\n", conf.host, conf.port);
     for (int i = 0; i < NCPU; ++i) {
         wait(&status);
         if (WIFEXITED(status)) {

@@ -6,7 +6,7 @@ PROGRAM=hpsa
 TEST=test
 
 all: main.o ${OBJECTS}
-	${CC} -o ${PROGRAM} $^ ${CFLAGS}
+	${CC} -o ${PROGRAM} $^
 
 ${OBJECTS}:
 	cd ${LIB_DIR} && ${CC} -c ${CFLAGS} *.c

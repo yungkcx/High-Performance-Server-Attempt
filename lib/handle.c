@@ -1,4 +1,4 @@
-#include "../include/hpsa.h"
+#include "../hpsa.h"
 
 int handle_read(client_t *cli)
 {

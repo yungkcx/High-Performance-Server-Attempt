@@ -1,4 +1,4 @@
-#include "../include/hpsa.h"
+#include "../hpsa.h"
 
 /* Hash table functions. */
 static int hash(int n, int tablesize)

@@ -1,4 +1,4 @@
-#include "../include/hpsa.h"
+#include "../hpsa.h"
 
 static int parse_req(hps_str_t *str, http_req *req)
 {
@@ -193,14 +193,13 @@ static int make_reply(client_t *cli, http_req *req, http_headers *headers)
     }
     if (gettype(path, &content_type) == ISPHP) {
         /* Make a temp file for PHP. */
-        char s[11] = "www/XXXXXX";
-        char tmp_path[255];
-        sprintf(tmp_path, "www/%s", path);
+        char s[11] = "wwwXXXXXX";
         fd = mkstemp(s);
         if (vfork() == 0) {
             close(STDOUT_FILENO);
             dup2(fd, STDOUT_FILENO);
-            execlp("php", "php", tmp_path, NULL);
+            chdir("www");
+            execlp("php", "php", path, NULL);
         }
         fsync(fd);
         lseek(fd, 0, SEEK_SET);

@@ -17,16 +17,14 @@
 #include <fcntl.h>
 #include <netdb.h>
 
-#include "clients.h"
-#include "http_parse.h"
+#include "lib/clients.h"
+#include "lib/http_parse.h"
+#include "lib/config.h"
 
 #define VERSION           "1.1"
-#define NCPU              8
 #define MAXLINE           4096
 #define TIMEBUF           40
-#define PORT              "8080"
 #define CONN_PER_PROCESS  200
-#define LISTENQ           (CONN_PER_PROCESS) * (NCPU)
 
 #define UNUSED(v)            (void)(v)
 #define max(a, b) ({\
@@ -48,7 +46,7 @@ enum {
 
 const char *sock_ntop(const struct sockaddr *sa);
 int tcp_connect(const char *host, const char *port);
-int tcp_listen(const char *host, const char *port, socklen_t *addrlenp);
+int tcp_listen(const char *host, const char *port, socklen_t *addrlenp, int backlog);
 int set_fl(int fd, int flags);
 int clr_fl(int fd, int flags);
 int accept_e(int sockfd, struct sockaddr *addr, socklen_t *addrlenp);
@@ -66,5 +64,7 @@ int event_mod(int epfd, int fd, int op);
 
 int handle_read(client_t *cli);
 int handle_write(client_t *cli);
+
+void webchild(int);
 
 #endif /* HASP_H__ */

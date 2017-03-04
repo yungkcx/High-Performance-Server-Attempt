@@ -1,4 +1,4 @@
-#include "../include/hpsa.h"
+#include "../hpsa.h"
 
 int event_mod(int epfd, int fd, int op)
 {
